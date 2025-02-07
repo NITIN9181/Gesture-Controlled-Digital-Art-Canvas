@@ -73,9 +73,9 @@ This project is open-source and available under the **MIT License**.
 
 ## 🤝 Connect with Me
 
-📧 Email: [](savio25082002@gmail.com)
-🔗 LinkedIn: [](https://linkedin.com/in/nitinsaviobada)
-🐙 GitHub: [](https://github.com/Nitin9181)
+📧 Email: [(savio25082002@gmail.com)]
+🔗 LinkedIn: [(https://linkedin.com/in/nitinsaviobada)]
+🐙 GitHub: [(https://github.com/Nitin9181)]
 
 ---
 
