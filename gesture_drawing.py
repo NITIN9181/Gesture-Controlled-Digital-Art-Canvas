@@ -7,7 +7,7 @@ mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
-# Open phone camera via DroidCam
+# Open Camera
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
@@ -29,9 +29,11 @@ buttons = {
 clear_button = (500, 10, 580, 50)
 held_shape_position = None  
 
-# Enable full-screen mode
-cv2.namedWindow("Resize with Pinch", cv2.WND_PROP_FULLSCREEN)
-cv2.setWindowProperty("Resize with Pinch", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+# Set appropriate window size
+screen_width = 1280  # Adjust based on your screen resolution
+screen_height = 720   # Adjust for a balanced display
+cv2.namedWindow("Resize with Pinch", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("Resize with Pinch", screen_width, screen_height)
 
 while True:
     ret, frame = cap.read()
@@ -65,19 +67,20 @@ while True:
         ix, iy = int(index_finger.x * w), int(index_finger.y * h)
         mx, my = int(middle_finger.x * w), int(middle_finger.y * h)
 
-        # Check if right-hand index finger is inside any button
-        for btn_text, (x1, y1, x2, y2) in buttons.items():
-            if x1 < ix < x2 and y1 < iy < y2:
-                shape = btn_text  
-                shape_selected = True  
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 200, 0), -1)
-                cv2.putText(frame, btn_text[0], (x1 + 15, y1 + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+        # **Shape Selection**
+        if not holding_shape:
+            for btn_text, (x1, y1, x2, y2) in buttons.items():
+                if x1 < ix < x2 and y1 < iy < y2:
+                    shape = btn_text  
+                    shape_selected = True  
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 200, 0), -1)
+                    cv2.putText(frame, btn_text[0], (x1 + 15, y1 + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
-        # Check if right-hand index finger is over the "Clear" button
+        # **Clear Button**
         if clear_button[0] < ix < clear_button[2] and clear_button[1] < iy < clear_button[3]:
             shapes_list.clear()  
 
-        # Detect if right-hand fingers are touching (holding shape)
+        # **Holding & Placing Shapes**
         finger_distance = abs(ix - mx) + abs(iy - my)
         if finger_distance < 20 and shape_selected:
             holding_shape = True
