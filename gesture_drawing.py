@@ -7,7 +7,7 @@ mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
-# Open webcam
+# Open phone camera via DroidCam
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
@@ -16,9 +16,9 @@ if not cap.isOpened():
 
 shape = "None"
 shapes_list = []
-holding_shape = False  # Track if the shape is being held
-shape_selected = False  # Ensure selection before placement
-shape_size = 20  # Default shape size
+holding_shape = False
+shape_selected = False
+shape_size = 20
 
 # Define UI elements
 buttons = {
@@ -27,7 +27,11 @@ buttons = {
     "Triangle": (380, 10, 430, 50),
 }
 clear_button = (500, 10, 580, 50)
-held_shape_position = None  # Position of hovering shape
+held_shape_position = None  
+
+# Enable full-screen mode
+cv2.namedWindow("Resize with Pinch", cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty("Resize with Pinch", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 while True:
     ret, frame = cap.read()
@@ -50,8 +54,8 @@ while True:
 
     if results.multi_hand_landmarks:
         hand_count = len(results.multi_hand_landmarks)
-        right_hand = results.multi_hand_landmarks[0]  # First detected hand (assumed right)
-        left_hand = results.multi_hand_landmarks[1] if hand_count > 1 else None  # Second hand if detected (left)
+        right_hand = results.multi_hand_landmarks[0]  
+        left_hand = results.multi_hand_landmarks[1] if hand_count > 1 else None  
 
         mp_drawing.draw_landmarks(frame, right_hand, mp_hands.HAND_CONNECTIONS)
 
@@ -64,22 +68,20 @@ while True:
         # Check if right-hand index finger is inside any button
         for btn_text, (x1, y1, x2, y2) in buttons.items():
             if x1 < ix < x2 and y1 < iy < y2:
-                shape = btn_text  # Update selected shape
-                shape_selected = True  # Mark shape as selected
+                shape = btn_text  
+                shape_selected = True  
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 200, 0), -1)
                 cv2.putText(frame, btn_text[0], (x1 + 15, y1 + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
         # Check if right-hand index finger is over the "Clear" button
         if clear_button[0] < ix < clear_button[2] and clear_button[1] < iy < clear_button[3]:
-            shapes_list.clear()  # Clear all placed shapes
-            cv2.rectangle(frame, (clear_button[0], clear_button[1]), (clear_button[2], clear_button[3]), (0, 200, 0), -1)
-            cv2.putText(frame, "Clear", (clear_button[0] + 15, clear_button[1] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            shapes_list.clear()  
 
         # Detect if right-hand fingers are touching (holding shape)
         finger_distance = abs(ix - mx) + abs(iy - my)
         if finger_distance < 20 and shape_selected:
             holding_shape = True
-            held_shape_position = (ix, iy)  # Move shape with fingers
+            held_shape_position = (ix, iy)  
 
         elif holding_shape and finger_distance > 30:
             # Release and deploy shape
@@ -99,8 +101,8 @@ while True:
             pinch_distance = np.linalg.norm([thumb_x - index_x, thumb_y - index_y])
 
             # Scale size dynamically based on pinch distance
-            shape_size = int(pinch_distance / 2)  # Adjust scaling factor as needed
-            shape_size = max(10, min(shape_size, 100))  # Keep size within reasonable limits
+            shape_size = int(pinch_distance / 2)  
+            shape_size = max(10, min(shape_size, 100))  
 
     # Draw placed shapes
     for shape_type, pos, size in shapes_list:
